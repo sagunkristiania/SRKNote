@@ -1,14 +1,16 @@
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
+import uvicorn
 
-from src.srknote.logger.logger import log_requests
-from srknote.api.auth import router as auth_router
-from srknote.api.note import router as notes_router
-from srknote.api.user import router as user_router
+from .api.auth import router as auth_router
+from .api.note import router as notes_router
+from .api.user import router as user_router
+from .logger.logger import log_requests
 
-from srknote.config.base import Base
-from srknote.config.db import get_engine
+
+from .config.base import Base
+from .config.db import get_engine
 
 Base.metadata.create_all(bind=get_engine())
 
@@ -46,7 +48,5 @@ async def custom_swagger_ui_html():
     return get_swagger_ui_html(openapi_url="/openapi.json", title="MC101 API Docs")
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -2,7 +2,6 @@ import hashlib
 from datetime import datetime, timezone, timedelta
 
 from passlib.context import CryptContext
-from rest_framework import status
 from cryptography.fernet import Fernet, InvalidToken
 import base64
 
@@ -17,7 +16,10 @@ from fastapi.security.oauth2 import OAuth2PasswordBearer
 
 
 def hash_context() -> CryptContext:
-    return CryptContext(schemes=["bcrypt", "pbkdf2_sha256", "argon2"], deprecated="auto")
+    try:
+        return CryptContext(schemes=["bcrypt", "pbkdf2_sha256", "argon2"], deprecated="auto")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Hash context creation failed")
 
 
 def hash_password(password: SecretStr) -> str:

@@ -3,7 +3,7 @@ name = "srknote"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "pawanAXiX",email = "pawanregmi86@gmail.com"}
+    {name = "sagunkristiania",email = "sakh024@student.kristiania.no"}
 ]
 readme = "README.md"
 requires-python = ">=3.10"
@@ -14,7 +14,11 @@ dependencies = [
     "sqlalchemy (>=2.0.44,<3.0.0)",
     "pydantic[email] (>=2.12.0,<3.0.0)",
     "email-validator (>=2.3.0,<3.0.0)",
-    "python-multipart (>=0.0.20,<0.0.21)"
+    "python-multipart (>=0.0.20,<0.0.21)",
+    "pydantic-settings (>=2.11.0,<3.0.0)",
+    "passlib[argon2] (>=1.7.4,<2.0.0)",
+    "cryptography (>=46.0.2,<47.0.0)",
+    "python-jose[cryptography] (>=3.5.0,<4.0.0)"
 ]
 
 [tool.poetry]
