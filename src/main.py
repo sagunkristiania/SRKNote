@@ -38,7 +38,7 @@ async def health():
 
 
 # Custom route for Swagger UI documentation
-@app.get("/SRKNote-docs", include_in_schema=False)
+@app.get("/mc101docs", include_in_schema=False)
 async def custom_swagger_ui_html():
     return get_swagger_ui_html(openapi_url="/openapi.json", title="MC101 API Docs")
 

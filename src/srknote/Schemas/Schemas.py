@@ -41,17 +41,24 @@ class NoteIn(BaseModel):
     user_enc:bool
 
 class NoteSchema(BaseModel):
-    id: int
+    id: Optional[int]=None
     user_id: UUID
     title: str
     content: str
     user_enc:bool
-    created_at: datetime
-    updated_at: datetime
+    enc_key:str
+
+class CreateNoteSchema(BaseModel):
+    title: str
+    content: str
+    user_enc:bool
+    enc_key:Optional[str] = None
+
 
 class NoteUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
+    enc_key: Optional[str] = None
 
 class UserRegister(BaseModel):
     name: str
@@ -67,3 +74,27 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class EncryptRequest(BaseModel):
+    key: str
+    data: str
+
+
+class DecryptRequest(BaseModel):
+    key: str
+    encrypted_data: str
+
+
+
+class NoteCreate(BaseModel):
+    title: str
+    content: str
+
+
+
+class NoteResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    user_id: UUID

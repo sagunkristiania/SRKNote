@@ -14,4 +14,5 @@ class Note(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     user_enc=Column(Boolean,default=False)
+    enc_key=Column(Text)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

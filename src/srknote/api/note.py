@@ -1,81 +1,84 @@
+import pdb
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 from typing import List, Optional
 
+from ..Schemas.Schemas import NoteSchema, CreateNoteSchema, EncryptRequest, NoteResponse, NoteUpdate, DecryptRequest
+from ..config.config import settings
 from ..config.db import get_db
-from ..config.security import get_current_user
+from ..config.security import get_current_user, encrypt_data, hash_context, encrypt_key, verify_key, decrypt_data
 from ..repository.NoteRepository import NoteRepository
-from ..models.Note import Note
 from ..models.User import User
 
-router = APIRouter(prefix="/api/notes", tags=["Notes"])
-
-
-class NoteCreate(BaseModel):
-    title: str
-    content: str
-
-
-class NoteUpdate(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-
-
-class NoteResponse(BaseModel):
-    id: int
-    title: str
-    content: str
-    user_id: int
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
-
-    class Config:
-        from_attributes = True
+router = APIRouter(prefix="/api/v1/notes", tags=["Notes"])
 
 
 @router.post("/", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
-async def add_note(
-        note_data: NoteCreate,
+def add_note(
+        note_data: CreateNoteSchema,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Create a new note"""
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You must be logged in to create a note"
+        )
     note_repo = NoteRepository(db)
 
-    db_note = Note(
-        title=note_data.title,
-        content=note_data.content,
-        user_id=current_user.id
+    enc_key = settings.ENC_KEY
+    if note_data.user_enc:
+        enc_key = note_data.enc_key
+
+    key = encrypt_key(enc_key)
+
+    hash_contxt = hash_context()
+
+    hashed_enc_key = hash_contxt.hash(enc_key)
+
+    content = EncryptRequest(data=note_data.content, key=key)
+
+    title = EncryptRequest(data=note_data.title, key=key)
+
+    encrypted_content = encrypt_data(content)
+
+    encrypted_title = encrypt_data(title)
+
+    db_note = NoteSchema(
+        title=encrypted_title,
+        content=encrypted_content,
+        user_id=current_user.id,
+        user_enc=note_data.user_enc,
+        enc_key=hashed_enc_key
     )
 
-    db.add(db_note)
-    db.commit()
-    db.refresh(db_note)
+    new_db_note = note_repo.create_note(db_note)
 
-    return db_note
+    return new_db_note
 
 
 @router.get("/", response_model=List[NoteResponse])
-async def list_all_notes(
+def list_all_notes(
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Get all notes for the current user"""
     note_repo = NoteRepository(db)
-    notes = await note_repo.get_note_by_user_id(current_user.id)
-    return notes
+    notes = note_repo.get_note_by_user_id(current_user.id)
+    return notes if notes else []
 
 
 @router.get("/{note_id}", response_model=NoteResponse)
-async def access_note(
+def access_note(
         note_id: int,
+        enc_key: Optional[str] = None,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Get a specific note by ID"""
     note_repo = NoteRepository(db)
-    note = await note_repo.get_note_by_id(note_id)
+
+    note = note_repo.get_note_by_id(note_id)
 
     if not note:
         raise HTTPException(
@@ -83,26 +86,47 @@ async def access_note(
             detail="Note not found"
         )
 
-    # Check if note belongs to current user
     if note.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to access this note"
         )
 
-    return note
+    if not note.user_enc:
+        enc_key = settings.ENC_KEY
+
+    key = encrypt_key(enc_key)
+
+    if not verify_key(enc_key, note.enc_key):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid key"
+        )
+
+    decrypt_title_request = DecryptRequest(encrypted_data=note.title, key=key)
+    decrypted_title = decrypt_data(decrypt_title_request)
+    decrypt_content_request = DecryptRequest(encrypted_data=note.content, key=key)
+    decrypted_content = decrypt_data(decrypt_content_request)
+
+    response = NoteResponse(
+        id=note.id,
+        title=decrypted_title,
+        content=decrypted_content,
+        user_id=note.user_id,
+    )
+    return response
 
 
 @router.put("/{note_id}", response_model=NoteResponse)
-async def edit_note(
+def edit_note(
         note_id: int,
         note_data: NoteUpdate,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Update a note"""
     note_repo = NoteRepository(db)
-    db_note = await note_repo.get_note_by_id(note_id)
+
+    db_note = note_repo.get_note_by_id(note_id)
 
     if not db_note:
         raise HTTPException(
@@ -110,18 +134,37 @@ async def edit_note(
             detail="Note not found"
         )
 
-    # Check if note belongs to current user
     if db_note.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to edit this note"
         )
 
-    # Update note fields
+    enc_key = settings.ENC_KEY
+
+    if db_note.user_enc:
+        enc_key = note_data.enc_key
+
+    key = encrypt_key(enc_key)
+
+    if not verify_key(enc_key, db_note.enc_key):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid key"
+        )
+
+    content = EncryptRequest(data=note_data.content, key=key)
+
+    title = EncryptRequest(data=note_data.title, key=key)
+
+    encrypted_content = encrypt_data(content)
+
+    encrypted_title = encrypt_data(title)
+
     if note_data.title:
-        db_note.title = note_data.title
+        db_note.title = encrypted_title
     if note_data.content:
-        db_note.content = note_data.content
+        db_note.content = encrypted_content
 
     db.commit()
     db.refresh(db_note)
@@ -130,14 +173,13 @@ async def edit_note(
 
 
 @router.delete("/{note_id}")
-async def delete_note(
+def delete_note(
         note_id: int,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Delete a note"""
     note_repo = NoteRepository(db)
-    db_note = await note_repo.get_note_by_id(note_id)
+    db_note = note_repo.get_note_by_id(note_id)
 
     if not db_note:
         raise HTTPException(
@@ -145,7 +187,6 @@ async def delete_note(
             detail="Note not found"
         )
 
-    # Check if note belongs to current user
     if db_note.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

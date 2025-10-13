@@ -1,4 +1,3 @@
-
 from fastapi import HTTPException, Depends
 
 from ..Schemas.Schemas import UserSchema
@@ -10,7 +9,7 @@ class UserRepository(BaseRepository):
     def __init__(self, db):
         super().__init__(User, db)
 
-    async def create_user(self, user: UserSchema):
+    def create_user(self, user: UserSchema):
         db_user = User(
             name=user.name,
             email=user.email,
@@ -20,13 +19,13 @@ class UserRepository(BaseRepository):
         self.db.commit()
         return db_user
 
-    async def get_user_by_email(self, email: str):
+    def get_user_by_email(self, email: str):
         return self.db.query(self.model).filter(self.model.email == email).first()
 
-    async def get_user_by_id(self, user_id: int):
+    def get_user_by_id(self, user_id: int):
         return self.db.query(self.model).filter(self.model.id == user_id).first()
 
-    async def update_user(self, user):
+    def update_user(self, user):
         db_user = self.get_user_by_id(user.id)
         if not db_user:
             raise HTTPException(status_code=404, detail='User Not Found')
@@ -38,7 +37,7 @@ class UserRepository(BaseRepository):
         self.db.refresh(db_user)
         return db_user
 
-    async def delete_user(self, user):
+    def delete_user(self, user):
         db_user = self.get_user_by_id(user.id)
         if not db_user:
             raise HTTPException(status_code=404, detail='User Not Found')

@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     JWT_SECRET: SecretStr
     JWT_ALG: str
+    ENC_KEY:str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     DB_USER: str
     DB_PASSWORD: SecretStr

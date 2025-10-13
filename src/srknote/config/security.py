@@ -1,7 +1,12 @@
+import hashlib
 from datetime import datetime, timezone, timedelta
+
 from passlib.context import CryptContext
 from rest_framework import status
+from cryptography.fernet import Fernet, InvalidToken
+import base64
 
+from ..Schemas.Schemas import EncryptRequest, DecryptRequest
 from ..config.db import get_db
 from ..models.User import User
 from .config import settings
@@ -38,7 +43,7 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
 
 
 def decode_access_token(token: str = Depends(oauth2_scheme), db=Depends(get_db)) -> dict:
@@ -54,6 +59,7 @@ def decode_access_token(token: str = Depends(oauth2_scheme), db=Depends(get_db))
     except JWTError:
         raise HTTPException(status_code=401, detail='Invalid Token')
 
+
 def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) -> dict:
     try:
         payload = jwt.decode(token, settings.JWT_SECRET.get_secret_value(), algorithms=[settings.JWT_ALG])
@@ -66,3 +72,80 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) ->
         return user
     except JWTError:
         raise HTTPException(status_code=401, detail='Invalid Token')
+
+
+def encrypt_data(request: EncryptRequest):
+    try:
+        if not request.data:
+            raise HTTPException(status_code=400, detail="Data cannot be empty")
+        if not request.key:
+            raise HTTPException(status_code=400, detail="Key cannot be empty")
+
+        try:
+            key_bytes = request.key.encode('utf-8')
+            decoded = base64.urlsafe_b64decode(key_bytes)
+            if len(decoded) != 32:
+                raise ValueError("Invalid key length")
+        except Exception:
+            raise HTTPException(status_code=400,
+                                detail="Invalid key format. Key must be 32 url-safe base64-encoded bytes")
+
+        fernet = Fernet(key_bytes)
+        encrypted_data = fernet.encrypt(request.data.encode('utf-8'))
+
+        return encrypted_data.decode('utf-8')
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Encryption failed")
+
+
+def decrypt_data(request: DecryptRequest):
+    try:
+        if not request.encrypted_data:
+            raise HTTPException(status_code=400, detail="Encrypted data cannot be empty")
+        if not request.key:
+            raise HTTPException(status_code=400, detail="Key cannot be empty")
+
+        try:
+            key_bytes = request.key.encode('utf-8')
+            decoded = base64.urlsafe_b64decode(key_bytes)
+            if len(decoded) != 32:
+                raise ValueError("Invalid key length")
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid key format")
+
+        fernet = Fernet(key_bytes)
+
+        try:
+            decrypted_data = fernet.decrypt(request.encrypted_data.encode('utf-8'))
+        except InvalidToken:
+            raise HTTPException(status_code=400, detail="Invalid encrypted data or wrong key")
+
+        return decrypted_data.decode('utf-8')
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Decryption failed")
+
+
+def encrypt_key(key: str):
+    try:
+        key_bytes = hashlib.sha256(key.encode()).digest()
+        return base64.urlsafe_b64encode(key_bytes).decode()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Encryption failed")
+
+
+# def verify_key(key: str, hashed_key: str):
+#     try:
+#         key_bytes = hashlib.sha256(key.encode()).digest()
+#         return base64.urlsafe_b64encode(key_bytes).decode() == hashed_key
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail="Verification failed")
+
+def verify_key(key, hashed_key: str) -> bool:
+    pwd_context = hash_context()
+    return pwd_context.verify(key, hashed_key)

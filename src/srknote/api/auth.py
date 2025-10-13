@@ -7,19 +7,20 @@ from typing import Optional
 from ..config.db import get_db
 from ..config.security import verify_password, hash_password as get_password_hash, create_access_token, get_current_user
 from ..repository.UserRepository import UserRepository
-from ..Schemas.Schemas import UserSchema,UserRegister,Token
+from ..Schemas.Schemas import UserSchema, UserRegister, Token
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-db=Depends(get_db)
-
+router = APIRouter(prefix="/api/v1/users", tags=["Authentication"])
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
+db = Depends(get_db)
 
 
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+
+
+def register(user_data: UserRegister, db: Session = Depends(get_db)):
     user_repo = UserRepository(db)
 
-    existing_user = await user_repo.get_user_by_email(user_data.email)
+    existing_user = user_repo.get_user_by_email(user_data.email)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -34,7 +35,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         password_hash=hashed_password
     )
 
-    new_user = await user_repo.create_user(user_schema)
+    new_user = user_repo.create_user(user_schema)
 
     return {
         "message": "User registered successfully",
@@ -47,11 +48,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+
+
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login user and return access token"""
     user_repo = UserRepository(db)
 
-    user = await user_repo.get_user_by_email(form_data.username)
+    user = user_repo.get_user_by_email(form_data.username)
 
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
@@ -70,5 +73,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 
 @router.post("/logout")
-async def logout(token: str = Depends(get_current_user)):
+
+
+def logout(token: str = Depends(get_current_user)):
     return {"message": "Logout successful. Please delete your token."}
