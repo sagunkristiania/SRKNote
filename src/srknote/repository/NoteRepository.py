@@ -34,7 +34,7 @@ class NoteRepository(BaseRepository):
         return self.db.query(self.model).filter(self.model.id == note_id).first()
 
     def get_note_by_user_id(self, user_id: int):
-        return self.db.query(self.model).filter(self.model.user_id == user_id).first()
+        return self.db.query(self.model).filter(self.model.user_id == user_id).all()
 
     def update_note(self, note):
         db_note = self.get_note_by_id(note.id)
