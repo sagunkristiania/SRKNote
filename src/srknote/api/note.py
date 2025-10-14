@@ -123,7 +123,7 @@ def access_note(
     return response
 
 
-@router.put("/{note_id}", response_model=NoteResponse)
+@router.patch("/{note_id}", response_model=NoteResponse)
 def edit_note(
         note_id: int,
         note_data: NoteUpdate,
