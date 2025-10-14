@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - prod 
+      - prod
 
 jobs:
   deploy:
@@ -35,3 +35,20 @@ jobs:
         sudo docker compose down &&
         sudo docker compose up --build -d
         "
+
+    - name: Wait for application to start
+      run: sleep 10
+
+    - name: Health Check
+      env:
+        SSH_HOST: 20.199.44.5
+      run: |
+        echo "Checking application health..."
+        response=$(curl -s -o /dev/null -w "%{http_code}" http://$SSH_HOST/health)
+        
+        if [ $response -eq 200 ]; then
+          echo "✅ Health check passed! Application is running (HTTP $response)"
+        else
+          echo "❌ Health check failed! HTTP status: $response"
+          exit 1
+        fi
