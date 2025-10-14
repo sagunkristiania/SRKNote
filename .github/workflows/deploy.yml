@@ -28,6 +28,7 @@ jobs:
         PROJECT_PATH: /home/sagun/SRKNote
       run: |
         ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
+        whoami &&
         cd $PROJECT_PATH &&
         sudo git checkout prod &&
         sudo git pull origin prod &&
