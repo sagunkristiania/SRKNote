@@ -1,0 +1,36 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - prod 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: prod
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to server
+      env:
+        SSH_HOST: 20.199.44.5
+        SSH_USER: sagun
+        SSH_PORT: 22
+        PROJECT_PATH: /path/to/your/project/on/server
+      run: |
+        ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
+        cd $PROJECT_PATH &&
+        git checkout prod &&
+        git pull origin prod &&
+        docker-compose down &&
+        docker-compose up --build -d
+        "
