@@ -102,6 +102,6 @@ jobs:
         if [ $response -eq 200 ]; then
           echo "✅ Health check passed! Application is running (HTTP $response)"
         else
-          echo "❌ Health check failed! HTTP status: $response"
+          echo "❌ Health check failed ! HTTP status: $response"
           exit 1
         fi
