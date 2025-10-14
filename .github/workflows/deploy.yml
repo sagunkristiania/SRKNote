@@ -25,7 +25,7 @@ jobs:
         SSH_HOST: 20.199.44.5
         SSH_USER: sagun
         SSH_PORT: 22
-        PROJECT_PATH: /path/to/your/project/on/server
+        PROJECT_PATH: /home/sagun/SRKNote
       run: |
         ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
         cd $PROJECT_PATH &&
