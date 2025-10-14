@@ -7,13 +7,8 @@ from uuid import UUID
 class RegisterIn(BaseModel):
     name: str
     email: EmailStr
-    password: str
+    password: str =Field(..., min_length=8)
 
-    @field_validator("password")
-    def strong_password(cls, v):
-        if len(v) < 8 or not any(c.isdigit() for c in v) or not any(c.isupper() for c in v):
-            raise ValueError("Password must be at least 8 characters, include a number and an uppercase letter")
-        return v
 
 
 class LoginIn(BaseModel):
@@ -60,11 +55,6 @@ class CreateNoteSchema(BaseModel):
     user_enc: bool = False
     enc_key: Optional[str] = Field(None, min_length=8)
 
-    @field_validator('enc_key')
-    def check_enc_key(self, v, values):
-        if values.get('user_enc') and not v:
-            raise ValueError('Please provide Your Encryption Password')
-        return v
 
 
 class NoteUpdate(BaseModel):
