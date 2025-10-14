@@ -38,7 +38,31 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to server
+    - name: Setup PostgreSQL (one-time)
+      env:
+        SSH_HOST: 20.199.44.5
+        SSH_USER: sagun
+        SSH_PORT: 22
+      run: |
+        ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
+        echo 'Checking if PostgreSQL container exists...' &&
+        if ! docker ps -a | grep -q postgres-container; then
+          echo 'Starting PostgreSQL container...' &&
+          docker run -d \
+            --name postgres-container \
+            --restart unless-stopped \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=Demon \
+            -e POSTGRES_DB=srknotesapp-db \
+            -p 5432:5432 \
+            -v postgres_data:/var/lib/postgresql/data \
+            postgres:latest
+        else
+          echo 'PostgreSQL container already exists, skipping...'
+        fi
+        "
+
+    - name: Deploy backend to server
       env:
         SSH_HOST: 20.199.44.5
         SSH_USER: sagun
@@ -46,27 +70,34 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
         ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
-        whoami &&
         echo 'Logging into Docker Hub...' &&
         echo '${{ secrets.DOCKER_PASSWORD }}' | docker login -u $DOCKER_USERNAME --password-stdin &&
-        echo 'Pulling latest image...' &&
-        sudo docker pull $DOCKER_USERNAME/srknote:latest &&
-        echo 'Stopping existing containers...' &&
-        docker stop srknote || true &&
-        docker rm srknote || true &&
-        echo 'Starting new container...' &&
-        sudo docker run -d --name srknote -p 8000:8000 $DOCKER_USERNAME/srknote:latest
+        echo 'Pulling latest backend image...' &&
+        docker pull $DOCKER_USERNAME/srknote:latest &&
+        echo 'Stopping existing backend container...' &&
+        docker stop SRKNote 2>/dev/null || true &&
+        docker rm SRKNote 2>/dev/null || true &&
+        echo 'Waiting for port to be released...' &&
+        sleep 3 &&
+        echo 'Starting new backend container...' &&
+        docker run -d \
+          --name SRKNote \
+          --restart unless-stopped \
+          --link postgres-container:postgres \
+          -e DOTENV=.env \
+          -p 8000:8000 \
+          $DOCKER_USERNAME/srknote:latest
         "
 
     - name: Wait for application to start
-      run: sleep 10
+      run: sleep 15
 
     - name: Health Check
       env:
         SSH_HOST: 20.199.44.5
       run: |
         echo "Checking application health..."
-        response=$(curl -s -o /dev/null -w "%{http_code}" http://$SSH_HOST/health)
+        response=$(curl -s -o /dev/null -w "%{http_code}" http://$SSH_HOST:8000/health)
         
         if [ $response -eq 200 ]; then
           echo "✅ Health check passed! Application is running (HTTP $response)"
