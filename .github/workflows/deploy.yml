@@ -30,8 +30,8 @@ jobs:
         ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
         whoami &&
         cd $PROJECT_PATH &&
-        sudo git checkout prod &&
-        sudo git pull origin prod &&
+        git checkout prod &&
+        git pull origin prod &&
         sudo docker compose down &&
         sudo docker compose up --build -d
         "
