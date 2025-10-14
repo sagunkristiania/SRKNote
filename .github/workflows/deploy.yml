@@ -98,7 +98,7 @@ jobs:
       run: |
         echo "Checking application health..."
         response=$(curl -s -o /dev/null -w "%{http_code}" http://$SSH_HOST/health)
-        
+        echo $response
         if [ $response -eq 200 ]; then
           echo "✅ Health check passed! Application is running (HTTP $response)"
         else
