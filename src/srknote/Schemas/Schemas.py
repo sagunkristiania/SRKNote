@@ -58,7 +58,7 @@ class CreateNoteSchema(BaseModel):
     title: str
     content: str
     user_enc: bool = False
-    enc_key: Optional[str] = None
+    enc_key: Optional[str] = Field(None, min_length=8)
 
     @field_validator('enc_key')
     def check_enc_key(self, v, values):

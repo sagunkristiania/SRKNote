@@ -69,7 +69,7 @@ def list_all_notes(
     return notes if notes else []
 
 
-@router.get("/{note_id}", response_model=NoteResponse)
+@router.post("/{note_id}", response_model=NoteResponse)
 def access_note(
         note_id: int,
         enc_key: Optional[str] = None,
