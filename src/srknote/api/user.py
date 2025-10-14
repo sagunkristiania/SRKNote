@@ -25,6 +25,13 @@ class UserUpdate(BaseModel):
     password: Optional[SecretStr] = None
 
 
+@router.get("/check-login")
+def check_login(current_user: User = Depends(get_current_user)):
+    if User:
+        return {"message": "User is logged in"}
+    else:
+        return {"message": "User is not logged in"}
+
 @router.get("/", response_model=List[UserResponse])
 def get_all_users(
         db: Session = Depends(get_db),
@@ -52,7 +59,7 @@ def get_user(
     return user
 
 
-@router.put("/", response_model=UserResponse)
+@router.patch("/", response_model=UserResponse)
 def edit_user(
         user_data: UserUpdate,
         db: Session = Depends(get_db),
