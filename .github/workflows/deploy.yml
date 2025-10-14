@@ -55,7 +55,7 @@ jobs:
         docker stop srknote || true &&
         docker rm srknote || true &&
         echo 'Starting new container...' &&
-        sudo docker run -d --name srknote -p 80:8000 $DOCKER_USERNAME/srknote:latest
+        sudo docker run -d --name srknote -p 8000:8000 $DOCKER_USERNAME/srknote:latest
         "
 
     - name: Wait for application to start
