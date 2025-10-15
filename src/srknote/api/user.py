@@ -32,14 +32,6 @@ def check_login(current_user: User = Depends(get_current_user)):
     else:
         return {"message": "User is not logged in"}
 
-@router.get("/", response_model=List[UserResponse])
-def get_all_users(
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
-):
-    # user_repo = UserRepository(db)
-    users = db.query(User).all()
-    return users
 
 
 @router.get("/", response_model=UserResponse)
