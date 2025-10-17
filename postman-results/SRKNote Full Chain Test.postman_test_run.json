@@ -1,0 +1,469 @@
+{
+	"id": "c6305d8d-f547-4cf4-bdf3-cf42fb7e8095",
+	"name": "SRKNote Full Chain Test",
+	"timestamp": "2025-10-17T06:57:57.963Z",
+	"collection_id": "48777078-caf10cbe-a09e-46ad-a271-96e0265404bf",
+	"folder_id": 0,
+	"environment_id": "48777078-8b1ba395-65df-459e-87a1-7c8210d19337",
+	"totalPass": 13,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2025-10-17T06:57:52.443Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "38c94e47-8207-4b70-9997-f870db0e66ce",
+			"name": "Register User",
+			"url": "http://20.199.44.5/api/v1/users/register",
+			"time": 395,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"User registered ✅": true
+			},
+			"testPassFailCounts": {
+				"User registered ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				395
+			],
+			"allTests": [
+				{
+					"User registered ✅": true
+				}
+			]
+		},
+		{
+			"id": "8a2710c5-5244-4c0f-bd90-a6d5fbf59ae9",
+			"name": "Login User",
+			"url": "http://20.199.44.5/api/v1/users/login",
+			"time": 350,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"User logged in ✅": true
+			},
+			"testPassFailCounts": {
+				"User logged in ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				350
+			],
+			"allTests": [
+				{
+					"User logged in ✅": true
+				}
+			]
+		},
+		{
+			"id": "0842c7b8-6562-4101-982e-6713d61166d3",
+			"name": "Check Login",
+			"url": "http://20.199.44.5/api/v1/users/check-login",
+			"time": 36,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login verified ✅": true
+			},
+			"testPassFailCounts": {
+				"Login verified ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				36
+			],
+			"allTests": [
+				{
+					"Login verified ✅": true
+				}
+			]
+		},
+		{
+			"id": "6ad7aedd-4c7e-4e85-b95a-48ba9c96fc70",
+			"name": "Edit Name",
+			"url": "http://20.199.44.5/api/v1/users",
+			"time": 41,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Name updated ✅": true
+			},
+			"testPassFailCounts": {
+				"Name updated ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				41
+			],
+			"allTests": [
+				{
+					"Name updated ✅": true
+				}
+			]
+		},
+		{
+			"id": "8cd0a70c-2c88-401a-ae26-f727dd434d64",
+			"name": "Edit Password",
+			"url": "http://20.199.44.5/api/v1/users",
+			"time": 361,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Password updated ✅": true
+			},
+			"testPassFailCounts": {
+				"Password updated ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				361
+			],
+			"allTests": [
+				{
+					"Password updated ✅": true
+				}
+			]
+		},
+		{
+			"id": "14aab43d-184b-4d56-a6f2-a64d06f4fe86",
+			"name": "Create Normal Note",
+			"url": "http://20.199.44.5/api/v1/notes",
+			"time": 361,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				361
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "12d3ba62-8764-44f9-a007-54e49c29605f",
+			"name": "Create Encrypted Note",
+			"url": "http://20.199.44.5/api/v1/notes",
+			"time": 362,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				362
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "19946922-dd1c-461b-bf6a-c8ac3032d90d",
+			"name": "Get All Notes",
+			"url": "http://20.199.44.5/api/v1/notes",
+			"time": 38,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"All notes fetched ✅": true
+			},
+			"testPassFailCounts": {
+				"All notes fetched ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				38
+			],
+			"allTests": [
+				{
+					"All notes fetched ✅": true
+				}
+			]
+		},
+		{
+			"id": "28f76b13-f552-4d88-bb23-c96ba460cbe4",
+			"name": "Access Note 1",
+			"url": "http://20.199.44.5/api/v1/notes/3",
+			"time": 351,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Note 1 accessed ✅": true
+			},
+			"testPassFailCounts": {
+				"Note 1 accessed ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				351
+			],
+			"allTests": [
+				{
+					"Note 1 accessed ✅": true
+				}
+			]
+		},
+		{
+			"id": "1cf0119e-7b64-4efa-8685-97f073d478c3",
+			"name": "Access Note 2 (wrong password)",
+			"url": "http://20.199.44.5/api/v1/notes/4?enc_key=wrongpass",
+			"time": 351,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Note 2 wrong password handled correctly ✅": true
+			},
+			"testPassFailCounts": {
+				"Note 2 wrong password handled correctly ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				351
+			],
+			"allTests": [
+				{
+					"Note 2 wrong password handled correctly ✅": true
+				}
+			]
+		},
+		{
+			"id": "1946f2c9-fb9a-433f-a4a8-0dbd68d81fa7",
+			"name": "Access Note 2 (correct password)",
+			"url": "http://20.199.44.5/api/v1/notes/4?enc_key=Key48929123",
+			"time": 351,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Note 2 accessed ✅": true
+			},
+			"testPassFailCounts": {
+				"Note 2 accessed ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				351
+			],
+			"allTests": [
+				{
+					"Note 2 accessed ✅": true
+				}
+			]
+		},
+		{
+			"id": "9219dd29-f859-42f1-ac5f-684e5f30b86d",
+			"name": "Patch/Edit Note 1",
+			"url": "http://20.199.44.5/api/v1/notes/3",
+			"time": 364,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Note 1 edited ✅": true
+			},
+			"testPassFailCounts": {
+				"Note 1 edited ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				364
+			],
+			"allTests": [
+				{
+					"Note 1 edited ✅": true
+				}
+			]
+		},
+		{
+			"id": "ee90e36d-50ee-4167-9300-75c0e5ed85b7",
+			"name": "Patch/Edit Note 2",
+			"url": "http://20.199.44.5/api/v1/notes/4",
+			"time": 357,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Note 2 edited ✅": true
+			},
+			"testPassFailCounts": {
+				"Note 2 edited ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				357
+			],
+			"allTests": [
+				{
+					"Note 2 edited ✅": true
+				}
+			]
+		},
+		{
+			"id": "c9e22464-1ccd-421b-af8d-3f5eee390055",
+			"name": "Delete Note 1",
+			"url": "http://20.199.44.5/api/v1/notes/3",
+			"time": 41,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Note 1 deleted ✅": true
+			},
+			"testPassFailCounts": {
+				"Note 1 deleted ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				41
+			],
+			"allTests": [
+				{
+					"Note 1 deleted ✅": true
+				}
+			]
+		},
+		{
+			"id": "b980c24d-2c5d-4f69-b869-c2bf4061ede6",
+			"name": "Delete User and all notes",
+			"url": "http://20.199.44.5/api/v1/users",
+			"time": 46,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"User deleted ✅": true
+			},
+			"testPassFailCounts": {
+				"User deleted ✅": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				46
+			],
+			"allTests": [
+				{
+					"User deleted ✅": true
+				}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 3805,
+	"collection": {
+		"requests": [
+			{
+				"id": "38c94e47-8207-4b70-9997-f870db0e66ce",
+				"method": "POST"
+			},
+			{
+				"id": "8a2710c5-5244-4c0f-bd90-a6d5fbf59ae9",
+				"method": "POST"
+			},
+			{
+				"id": "0842c7b8-6562-4101-982e-6713d61166d3",
+				"method": "GET"
+			},
+			{
+				"id": "6ad7aedd-4c7e-4e85-b95a-48ba9c96fc70",
+				"method": "PATCH"
+			},
+			{
+				"id": "8cd0a70c-2c88-401a-ae26-f727dd434d64",
+				"method": "PATCH"
+			},
+			{
+				"id": "14aab43d-184b-4d56-a6f2-a64d06f4fe86",
+				"method": "POST"
+			},
+			{
+				"id": "12d3ba62-8764-44f9-a007-54e49c29605f",
+				"method": "POST"
+			},
+			{
+				"id": "19946922-dd1c-461b-bf6a-c8ac3032d90d",
+				"method": "GET"
+			},
+			{
+				"id": "28f76b13-f552-4d88-bb23-c96ba460cbe4",
+				"method": "POST"
+			},
+			{
+				"id": "1cf0119e-7b64-4efa-8685-97f073d478c3",
+				"method": "POST"
+			},
+			{
+				"id": "1946f2c9-fb9a-433f-a4a8-0dbd68d81fa7",
+				"method": "POST"
+			},
+			{
+				"id": "9219dd29-f859-42f1-ac5f-684e5f30b86d",
+				"method": "PATCH"
+			},
+			{
+				"id": "ee90e36d-50ee-4167-9300-75c0e5ed85b7",
+				"method": "PATCH"
+			},
+			{
+				"id": "c9e22464-1ccd-421b-af8d-3f5eee390055",
+				"method": "DELETE"
+			},
+			{
+				"id": "b980c24d-2c5d-4f69-b869-c2bf4061ede6",
+				"method": "DELETE"
+			}
+		]
+	}
+}
