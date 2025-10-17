@@ -59,7 +59,7 @@ srknote/                        # Root folder of the project
 │       │   └── NoteRepository.py # Note-specific queries
 │       ├── Schemas/            # Pydantic schemas
 │       │   └── Schemas.py        # Request & response validation
-│       ├── api/            # API endpoints
+│       ├── api/                # API endpoints
 │       │   ├── auth.py           # Register & login endpoints
 │       │   ├── user.py           # User profile endpoints
 │       │   └── note.py           # Note CRUD endpoints
@@ -67,6 +67,8 @@ srknote/                        # Root folder of the project
 │       └── main.py             # FastAPI app initialization
 ├── logs/                       # Logs folder (not committed to GitHub)
 │   └── log.log                  # Application logs
+├── postman-results/            # Postman test results
+│   └── SRKNote Full Chain Test.postman_test_run.json
 ├── .github/                     # GitHub-specific configuration
 │   └── workflows/               # CI/CD workflows
 │       └── deploy.yml           # Deployment workflow for GitHub Actions
@@ -75,7 +77,8 @@ srknote/                        # Root folder of the project
 ├── pyproject.toml               # Poetry dependencies and scripts
 ├── requirements.txt             # Optional pip requirements
 ├── .env                         # Environment variables (secret)
-└── README.md                    # Project documentation and setup instruction
+└── README.md
+
 ```
 
 ---
@@ -224,4 +227,5 @@ DELETE /api/v1/notes/1
 - Duplicate encryption keys per user are prohibited to prevent accidental data leaks.
 
 ---
+
 
