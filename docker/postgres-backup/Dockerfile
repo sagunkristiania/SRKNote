@@ -11,4 +11,4 @@ RUN chmod +x /backup.sh
 RUN mkdir -p /backups
 
 # Run backup every hour
-ENTRYPOINT ["sh", "-c", "mkdir -p /backups && while true; do /backup.sh; sleep 3600; done"]
+ENTRYPOINT ["sh", "-c", "while true; do /backup.sh; sleep 3600; done"]
