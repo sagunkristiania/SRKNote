@@ -1,29 +1,44 @@
+# -----------------------------
+# Project Metadata
+# -----------------------------
 [project]
-name = "srknote"
-version = "0.1.0"
-description = ""
+name = "srknote"                                # Name of the project
+version = "0.1.0"                               # Initial version
+description = ""                                # Short description of the project
 authors = [
-    {name = "sagunkristiania",email = "sakh024@student.kristiania.no"}
+    {name = "sagunkristiania", email = "sakh024@student.kristiania.no"}  # Author info
 ]
-readme = "README.md"
-requires-python = ">=3.10"
+readme = "README.md"                            # README file to include in package
+requires-python = ">=3.10"                      # Minimum Python version required
+
+# -----------------------------
+# Project Dependencies
+# -----------------------------
 dependencies = [
-    "fastapi (>=0.119.0,<0.120.0)",
-    "uvicorn (>=0.37.0,<0.38.0)",
-    "psycopg2-binary (>=2.9.11,<3.0.0)",
-    "sqlalchemy (>=2.0.44,<3.0.0)",
-    "pydantic[email] (>=2.12.0,<3.0.0)",
-    "email-validator (>=2.3.0,<3.0.0)",
-    "python-multipart (>=0.0.20,<0.0.21)",
-    "pydantic-settings (>=2.11.0,<3.0.0)",
-    "passlib[argon2] (>=1.7.4,<2.0.0)",
-    "cryptography (>=46.0.2,<47.0.0)",
-    "python-jose[cryptography] (>=3.5.0,<4.0.0)"
+    "fastapi (>=0.119.0,<0.120.0)",            # Web framework for building APIs
+    "uvicorn (>=0.37.0,<0.38.0)",              # ASGI server to run FastAPI
+    "psycopg2-binary (>=2.9.11,<3.0.0)",      # PostgreSQL database driver
+    "sqlalchemy (>=2.0.44,<3.0.0)",           # ORM for database interaction
+    "pydantic[email] (>=2.12.0,<3.0.0)",      # Data validation and settings management
+    "email-validator (>=2.3.0,<3.0.0)",       # Validate email addresses
+    "python-multipart (>=0.0.20,<0.0.21)",    # Parse form data, required for file uploads
+    "pydantic-settings (>=2.11.0,<3.0.0)",    # Manage settings via Pydantic models
+    "passlib[argon2] (>=1.7.4,<2.0.0)",       # Password hashing library with Argon2
+    "cryptography (>=46.0.2,<47.0.0)",        # Encryption utilities
+    "python-jose[cryptography] (>=3.5.0,<4.0.0)" # JWT creation and verification
 ]
 
+# -----------------------------
+# Package configuration
+# -----------------------------
 [tool.poetry]
-packages = [{include = "srknote", from = "src"}]
+packages = [
+    {include = "srknote", from = "src"}       # Include `srknote` package located in `src/` directory
+]
 
+# -----------------------------
+# Build system configuration
+# -----------------------------
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=2.0.0,<3.0.0"]      # Poetry core required for building the package
+build-backend = "poetry.core.masonry.api"     # Build backend used by Poetry
