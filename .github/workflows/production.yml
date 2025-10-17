@@ -1,8 +1,8 @@
 # =====================================================
-# GitHub Actions Workflow: Deploy SRKNote to Server
+# GitHub Actions Workflow: Deploy SRKNote to Server + Backup
 # =====================================================
-# Automates deployment of the SRKNote backend to a remote server.
-# Trigger: On push to the 'prod' branch.
+# Automates deployment of the SRKNote backend and PostgreSQL backup container
+# Trigger: On push to the 'prod' branch
 # Workflow Steps:
 #   1. Checkout repository code
 #   2. Set up Docker Buildx
@@ -11,8 +11,9 @@
 #   5. Set up SSH for remote server access
 #   6. Ensure PostgreSQL container exists on server
 #   7. Deploy SRKNote backend container
-#   8. Wait for backend to start
-#   9. Perform health check to validate deployment
+#   8. Deploy PostgreSQL backup container
+#   9. Wait for backend to start
+#  10. Perform health check to validate deployment
 # =====================================================
 
 name: Deploy to Server
@@ -33,7 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: prod  # Checkout prod branch
+          ref: prod
 
       # -----------------------------
       # Step 2: Set up Docker Buildx
@@ -56,8 +57,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: .  # Root of repo as build context
-          push: true  # Push the image to Docker Hub
+          context: .
+          push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/srknote:latest
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/srknote:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/srknote:buildcache,mode=max
@@ -128,13 +129,53 @@ jobs:
           "
 
       # -----------------------------
-      # Step 8: Wait for backend to start
+      # Step 8: Deploy PostgreSQL backup container
+      # -----------------------------
+      - name: Deploy PostgreSQL backup container
+        env:
+          SSH_HOST: 20.199.44.5
+          SSH_USER: sagun
+          SSH_PORT: 22
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
+          echo 'Deploying PostgreSQL backup container...' &&
+          if ! sudo docker ps -a | grep -q postgres-backup-container; then
+            sudo docker run -d \
+              --name postgres-backup-container \
+              --restart unless-stopped \
+              --link postgres-container:postgres \
+              -e POSTGRES_USER=postgres \
+              -e POSTGRES_PASSWORD=Demon \
+              -e POSTGRES_DB=srknotesapp-db \
+              -e POSTGRES_HOST=postgres \
+              -v $(pwd)/backups:/backups \
+              $DOCKER_USERNAME/srknote-backup:latest
+          else
+            echo 'Backup container already exists, restarting...' &&
+            sudo docker stop postgres-backup-container &&
+            sudo docker rm postgres-backup-container &&
+            sudo docker run -d \
+              --name postgres-backup-container \
+              --restart unless-stopped \
+              --link postgres-container:postgres \
+              -e POSTGRES_USER=postgres \
+              -e POSTGRES_PASSWORD=Demon \
+              -e POSTGRES_DB=srknotesapp-db \
+              -e POSTGRES_HOST=postgres \
+              -v $(pwd)/backups:/backups \
+              $DOCKER_USERNAME/srknote-backup:latest
+          fi
+          "
+
+      # -----------------------------
+      # Step 9: Wait for backend to start
       # -----------------------------
       - name: Wait for application to start
         run: sleep 30  # Wait 30s to ensure backend is ready
 
       # -----------------------------
-      # Step 9: Perform health check
+      # Step 10: Perform health check
       # -----------------------------
       - name: Health Check
         env:
