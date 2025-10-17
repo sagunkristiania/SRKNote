@@ -1,7 +1,7 @@
 # SRKNote
 
 SRKNote is a secure, full-featured note-taking web application built with **FastAPI** and **PostgreSQL**.  
-It allows users to create, encrypt, view, update, and delete personal notes safely.  
+It allows users to create, encrypt, view, update, and delete personal notes safely and has auto backup function 
 
 ---
 
@@ -46,38 +46,43 @@ srknote/                        # Root folder of the project
 ├── src/
 │   └── srknote/                # Main application code
 │       ├── config/             # Configuration & settings
-│       │   ├── base.py           # SQLAlchemy base class
-│       │   ├── db.py             # Database connection/session
-│       │   ├── security.py       # Hashing, JWT, encryption/decryption
-│       │   └── config.py         # App settings from .env
+│       │   ├── base.py         # SQLAlchemy base class
+│       │   ├── db.py           # Database connection/session
+│       │   ├── security.py     # Hashing, JWT, encryption/decryption
+│       │   └── config.py       # App settings from .env
 │       ├── models/             # SQLAlchemy models
-│       │   ├── User.py           # User table/model
-│       │   └── Note.py           # Note table/model
+│       │   ├── User.py         # User table/model
+│       │   └── Note.py         # Note table/model
 │       ├── repository/         # Database access layer
 │       │   ├── BaseRepository.py # Generic repository for CRUD
 │       │   ├── UserRepository.py # User-specific queries
 │       │   └── NoteRepository.py # Note-specific queries
 │       ├── Schemas/            # Pydantic schemas
-│       │   └── Schemas.py        # Request & response validation
+│       │   └── Schemas.py      # Request & response validation
 │       ├── api/                # API endpoints
-│       │   ├── auth.py           # Register & login endpoints
-│       │   ├── user.py           # User profile endpoints
-│       │   └── note.py           # Note CRUD endpoints
+│       │   ├── auth.py         # Register & login endpoints
+│       │   ├── user.py         # User profile endpoints
+│       │   └── note.py         # Note CRUD endpoints
 │       ├── logger.py           # Request/response logging
 │       └── main.py             # FastAPI app initialization
 ├── logs/                       # Logs folder (not committed to GitHub)
 │   └── log.log                  # Application logs
-├── postman-results/            # Postman test results
-│   └── SRKNote Full Chain Test.postman_test_run.json
+├── docker/                      # Docker-related files
+│   └── postgres-back/           # PostgreSQL backup setup
+│       ├── Dockerfile           # Dockerfile for backup container
+│       ├── backup.sh            # Backup script
+│       └── crontab.txt          # Cron schedule for automated backup
 ├── .github/                     # GitHub-specific configuration
 │   └── workflows/               # CI/CD workflows
 │       └── deploy.yml           # Deployment workflow for GitHub Actions
-├── Dockerfile                   # Docker image definition
+├── Dockerfile                   # Docker image definition for main app
 ├── docker-compose.yml           # Multi-container setup
 ├── pyproject.toml               # Poetry dependencies and scripts
 ├── requirements.txt             # Optional pip requirements
 ├── .env                         # Environment variables (secret)
-└── README.md
+├── .gitignore                   # Files/folders to ignore in Git
+└── README.md                    # Project documentation and setup instruction
+
 
 ```
 
@@ -91,6 +96,7 @@ srknote/                        # Root folder of the project
 - **Encryption**: Fernet (cryptography)
 - **Logging**: Python `logging` module with masked sensitive info
 - **Containerization**: Docker, Docker Compose
+- **Backup**: Alpine Linux, cronjob for automated PostgreSQL backups
 - **Package Management**: Poetry
 
 ---
@@ -227,5 +233,6 @@ DELETE /api/v1/notes/1
 - Duplicate encryption keys per user are prohibited to prevent accidental data leaks.
 
 ---
+
 
 
