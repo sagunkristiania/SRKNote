@@ -1,19 +1,20 @@
 # =====================================================
-# GitHub Actions Workflow: Deploy SRKNote to Server + Backup
+# GitHub Actions Workflow: Deploy SRKNote + Backup
 # =====================================================
-# Automates deployment of the SRKNote backend and PostgreSQL backup container
-# Trigger: On push to the 'prod' branch
-# Workflow Steps:
-#   1. Checkout repository code
-#   2. Set up Docker Buildx
+# Automates deployment of the SRKNote backend and PostgreSQL backup container.
+# Trigger: On push to the 'prod' branch.
+# Steps:
+#   1. Checkout code
+#   2. Setup Docker Buildx
 #   3. Login to Docker Hub
-#   4. Build and push Docker image
-#   5. Set up SSH for remote server access
-#   6. Ensure PostgreSQL container exists on server
-#   7. Deploy SRKNote backend container
-#   8. Deploy PostgreSQL backup container
-#   9. Wait for backend to start
-#  10. Perform health check to validate deployment
+#   4. Build & push backend image
+#   5. Build & push backup image
+#   6. Setup SSH access
+#   7. Ensure PostgreSQL container exists
+#   8. Deploy backend container
+#   9. Deploy backup container
+#  10. Wait for backend
+#  11. Health check
 # =====================================================
 
 name: Deploy to Server
@@ -21,7 +22,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - prod  # Trigger workflow only on pushes to prod branch
+      - prod
 
 jobs:
   deploy:
@@ -29,7 +30,7 @@ jobs:
 
     steps:
       # -----------------------------
-      # Step 1: Checkout repository code
+      # Step 1: Checkout repository
       # -----------------------------
       - name: Checkout code
         uses: actions/checkout@v2
@@ -37,13 +38,13 @@ jobs:
           ref: prod
 
       # -----------------------------
-      # Step 2: Set up Docker Buildx
+      # Step 2: Setup Docker Buildx
       # -----------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       # -----------------------------
-      # Step 3: Log in to Docker Hub
+      # Step 3: Login to Docker Hub
       # -----------------------------
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -52,9 +53,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # -----------------------------
-      # Step 4: Build and push Docker image
+      # Step 4: Build & push backend image
       # -----------------------------
-      - name: Build and push Docker image
+      - name: Build and push backend image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -64,7 +65,19 @@ jobs:
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/srknote:buildcache,mode=max
 
       # -----------------------------
-      # Step 5: Set up SSH access
+      # Step 5: Build & push backup image
+      # -----------------------------
+      - name: Build and push backup image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docker/postgres-backup
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/srknote-backup:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/srknote-backup:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/srknote-backup:buildcache,mode=max
+
+      # -----------------------------
+      # Step 6: Setup SSH access
       # -----------------------------
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
@@ -72,18 +85,16 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # -----------------------------
-      # Step 6: Ensure PostgreSQL container exists
+      # Step 7: Ensure PostgreSQL container exists
       # -----------------------------
-      - name: Setup PostgreSQL (one-time)
+      - name: Setup PostgreSQL
         env:
           SSH_HOST: 20.199.44.5
           SSH_USER: sagun
           SSH_PORT: 22
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
-          echo 'Checking if PostgreSQL container exists...' &&
           if ! sudo docker ps -a | grep -q postgres-container; then
-            echo 'Starting PostgreSQL container...' &&
             sudo docker run -d \
               --name postgres-container \
               --restart unless-stopped \
@@ -93,15 +104,13 @@ jobs:
               -p 5432:5432 \
               -v postgres_data:/var/lib/postgresql/data \
               postgres:latest
-          else
-            echo 'PostgreSQL container already exists, skipping...'
           fi
           "
 
       # -----------------------------
-      # Step 7: Deploy SRKNote backend container
+      # Step 8: Deploy backend container
       # -----------------------------
-      - name: Deploy backend to server
+      - name: Deploy backend
         env:
           SSH_HOST: 20.199.44.5
           SSH_USER: sagun
@@ -109,16 +118,10 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
-          echo 'Logging into Docker Hub...' &&
           echo '${{ secrets.DOCKER_PASSWORD }}' | sudo docker login -u $DOCKER_USERNAME --password-stdin &&
-          echo 'Pulling latest backend image...' &&
           sudo docker pull $DOCKER_USERNAME/srknote:latest &&
-          echo 'Stopping existing backend container...' &&
           sudo docker stop SRKNote 2>/dev/null || true &&
           sudo docker rm SRKNote 2>/dev/null || true &&
-          echo 'Waiting for port to be released...' &&
-          sleep 3 &&
-          echo 'Starting new backend container...' &&
           sudo docker run -d \
             --name SRKNote \
             --restart unless-stopped \
@@ -129,9 +132,9 @@ jobs:
           "
 
       # -----------------------------
-      # Step 8: Deploy PostgreSQL backup container
+      # Step 9: Deploy PostgreSQL backup container
       # -----------------------------
-      - name: Deploy PostgreSQL backup container
+      - name: Deploy backup container
         env:
           SSH_HOST: 20.199.44.5
           SSH_USER: sagun
@@ -139,8 +142,8 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST -p $SSH_PORT "
-          echo 'Deploying PostgreSQL backup container...' &&
           if ! sudo docker ps -a | grep -q postgres-backup-container; then
+            sudo docker pull $DOCKER_USERNAME/srknote-backup:latest &&
             sudo docker run -d \
               --name postgres-backup-container \
               --restart unless-stopped \
@@ -152,9 +155,9 @@ jobs:
               -v $(pwd)/backups:/backups \
               $DOCKER_USERNAME/srknote-backup:latest
           else
-            echo 'Backup container already exists, restarting...' &&
             sudo docker stop postgres-backup-container &&
             sudo docker rm postgres-backup-container &&
+            sudo docker pull $DOCKER_USERNAME/srknote-backup:latest &&
             sudo docker run -d \
               --name postgres-backup-container \
               --restart unless-stopped \
@@ -169,24 +172,22 @@ jobs:
           "
 
       # -----------------------------
-      # Step 9: Wait for backend to start
+      # Step 10: Wait for backend
       # -----------------------------
-      - name: Wait for application to start
-        run: sleep 30  # Wait 30s to ensure backend is ready
+      - name: Wait for backend
+        run: sleep 30
 
       # -----------------------------
-      # Step 10: Perform health check
+      # Step 11: Health check
       # -----------------------------
       - name: Health Check
         env:
           SSH_HOST: 20.199.44.5
         run: |
-          echo "Checking application health..."
           response=$(curl -s -o /dev/null -w "%{http_code}" http://$SSH_HOST/health)
-          echo $response
           if [ $response -eq 200 ]; then
-            echo "✅ Health check passed! Application is running (HTTP $response)"
+            echo "✅ Backend running"
           else
-            echo "❌ Health check failed! HTTP status: $response"
+            echo "❌ Backend not running"
             exit 1
           fi
