@@ -41,7 +41,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt  # Ensure pip p
 
 # -----------------------------
 # Copy project code
-# -----------------------------
+
 COPY . /app                                                   # Copy all project files into container
 
 # -----------------------------
