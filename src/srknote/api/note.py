@@ -4,7 +4,7 @@ note.py
 This module defines all endpoints related to creating, reading, updating, and deleting
 notes for authenticated users.
 
-Features:
+Feature:
 - Create notes (with optional user-level encryption)
 - Retrieve all notes belonging to a user
 - Access (decrypt) a specific note
