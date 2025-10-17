@@ -1,8 +1,14 @@
-# -----------------------------
-# Docker Compose configuration for SRKNote application
-# Version 3.8 is used to leverage modern Docker Compose features
-# -----------------------------
 version: '3.8'
+
+# =============================================
+# Docker Compose Configuration for SRKNote App
+# =============================================
+# This file defines a multi-container setup for the SRKNote application.
+# It includes:
+#   1. PostgreSQL database container
+#   2. SRKNote FastAPI backend container
+#   3. PostgreSQL backup container (hourly backups, 7-day retention)
+# =============================================
 
 services:
 
@@ -10,34 +16,55 @@ services:
   # PostgreSQL Database Service
   # -----------------------------
   postgres:
-    image: postgres:latest                  # Use the latest official PostgreSQL image
-    container_name: postgres-container     # Name of the container for easy reference
-    environment:                            # Environment variables to initialize the database
-      POSTGRES_USER: postgres               # Database username
-      POSTGRES_PASSWORD: Demon              # Database password (keep secure)
-      POSTGRES_DB: srknotesapp-db           # Name of the database to create
+    image: postgres:latest                   # Use the official latest PostgreSQL image
+    container_name: postgres-container      # Name of the container for easy reference
+    environment:                             # Environment variables to initialize DB
+      POSTGRES_USER: postgres                # DB username
+      POSTGRES_PASSWORD: Demon               # DB password
+      POSTGRES_DB: srknotesapp-db            # Name of the database
     ports:
-      - "5432:5432"                         # Map container's port 5432 to host for local access
+      - "5432:5432"                          # Map PostgreSQL port to host
     volumes:
-      - postgres_data:/var/lib/postgresql/data   # Persist database data in Docker volume
+      - postgres_data:/var/lib/postgresql/data  # Persist DB data in Docker volume
 
   # -----------------------------
   # SRKNote Backend Service
   # -----------------------------
   backend:
     build:
-      context: .                             # Build context pointing to current directory
-      dockerfile: Dockerfile                 # Dockerfile to use for building the backend image
+      context: .                             # Build context: root of the project
+      dockerfile: Dockerfile                 # Dockerfile for FastAPI backend
     container_name: SRKNote                  # Name of the backend container
     environment:
-      - DOTENV=.env                          # Load environment variables from the .env file
+      - DOTENV=.env                          # Load environment variables from .env
     ports:
-      - "8000:8000"                          # Map FastAPI backend port 8000 to host
+      - "8000:8000"                          # Map FastAPI port to host
     depends_on:
-      - postgres                              # Ensure Postgres service starts before backend
+      - postgres                              # Ensure DB starts before backend
+
+  # -----------------------------
+  # PostgreSQL Backup Service
+  # -----------------------------
+  postgres-backup:
+    build:
+      context: ./docker/postgres-backup      # Directory with Dockerfile & backup.sh
+    container_name: postgres-backup-container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Demon
+      POSTGRES_DB: srknotesapp-db
+      POSTGRES_HOST: postgres                 # Link to main Postgres container
+    volumes:
+      - ./backups:/backups                    # Host folder to store backups
+    entrypoint: ["sh", "-c", "mkdir -p /backups && while true; do /backup.sh; sleep 3600; done"]
+    # Explanation:
+    #   - mkdir -p /backups : Ensure backup folder exists in container
+    #   - while true ... sleep 3600 : Run backup script every hour
+    depends_on:
+      - postgres                              # Ensure DB starts before backup
 
 # -----------------------------
-# Named volume for PostgreSQL data persistence
+# Named volumes for persistent data
 # -----------------------------
 volumes:
-  postgres_data:
+  postgres_data:                               # Stores Postgres database files

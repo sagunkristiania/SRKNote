@@ -1,0 +1,2 @@
+# Run backup.sh every hour
+0 * * * * /backup.sh
