@@ -90,9 +90,9 @@ async def custom_swagger_ui_html():
     """
     return get_swagger_ui_html(openapi_url="/openapi.json", title="MC101 API Docs")
 
-# ---------------------------
+# ----------------------------
 # Optional: Run with Uvicorn
-# ---------------------------
+# ----------------------------
 # Uncomment to run directly
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
